@@ -1,0 +1,14 @@
+{
+  "name": "vashudhabackend",
+  "version": "1.0.0",
+  "description": "a backend of vashudha kalyan ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vashudha"
+  ],
+  "author": "mantu kumar rana",
+  "license": "ISC"
+}
