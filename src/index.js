@@ -1,6 +1,7 @@
 import dotenv from "dotenv"
 import {app} from "./app.js"
 import connectDB from "./db/index.js";
+// import {router} from "./routes/auth.route.js"
 
 dotenv.config({
     path: './env'
@@ -19,3 +20,10 @@ connectDB()
 .catch((err) => {
     console.log("MONGODB connection falied !!!! ",err)
 })
+
+// app.use("api/v1/vashu",router)
+
+//default route
+app.get("/", (req, res) => {
+    res.send("this is home page")
+}) 
