@@ -7,9 +7,11 @@ import {
     getCurrentUser, 
     changeUserEmail, 
     changeUserName,
-    changeCurrentPassword
+    changeCurrentPassword,
+    changeAvatarImage
 } from "../controllers/auth.controller.js";
 import {verifyJWT} from "../middlewares/auth.middleware.js"
+import {upload} from "../middlewares/multer.middleware.js"
 
 const router = express.Router()
 
@@ -17,11 +19,18 @@ const router = express.Router()
 router.post("/sendotp",generateOtp)
 router.post("/user-register",register)
 router.post("/user-login",login)
-router.post("/user-logout",verifyJWT, logout)
+
 router.post("/change-user-email",verifyJWT, changeUserEmail)
 router.post("/change-user-name",verifyJWT, changeUserName)
 router.get("/get-current-user",verifyJWT, getCurrentUser)
 router.put("/change-password",verifyJWT, changeCurrentPassword)
+
+//secure route
+router.route("/user-logout").post(verifyJWT, logout)
+
+router.route("/upload-avatar").post(
+    upload.single("avatar"),
+    verifyJWT,changeAvatarImage)
 
 
 export {router}

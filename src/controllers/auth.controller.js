@@ -3,11 +3,14 @@ import {OTP} from "../models/otp.model.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
+import {uploadOnCloudinay} from "../utils/cloudinary.js"
 import otpGenerator from "otp-generator"
 import jwt from "jsonwebtoken"
 
 
 //generate access token and refresh toeken
+
+
 const generateAccessAndRefreshToken = async(userId) => {
     try {
         const user = await User.findById(userId)
@@ -25,8 +28,9 @@ const generateAccessAndRefreshToken = async(userId) => {
 }
 
 //generate the otp
-const generateOtp = asyncHandler( async(req, res) => {
-    //fetch the data from frontend
+const generateOtp = async(req, res) =>{
+    try {
+        //fetch the data from frontend
     //validate the data
     //check user is allready exists
     //generate the opt
@@ -69,9 +73,10 @@ const generateOtp = asyncHandler( async(req, res) => {
     return res.status(201).json(
         new ApiResponse(200,otpBody,"otp generate successfull")
     )
-
-
-})
+    } catch (error) {
+        throw new ApiError(500,error?.message || "error in otp generator")
+    }
+}
 
 //user register
 const register = asyncHandler( async (req, res) => {
@@ -325,11 +330,11 @@ const changeUserName = asyncHandler( async(req, res) => {
         new ApiResponse(200, user, "Name is change successfull")
     )
 })
-
+0
 //change user email
 const changeUserEmail = asyncHandler( async(req, res) => {
-    const {email, otp} = req.body
-    if(!email) {
+    const {email,otp} = req.body
+    if(!email || !otp) {
         throw new ApiError(404, "email is required for updating")
     }
     //check if emil is already exists
@@ -338,14 +343,12 @@ const changeUserEmail = asyncHandler( async(req, res) => {
     //     throw new ApiError(404, "Email is already exists")
     // }
 
-    generateOtp()
-
     //check otp
-    const result = await OTP.findOne({email}).split({createAt : -1}).limit(1)
+    const result = await OTP.findOne({email}).sort({createAt : -1}).limit(1)
     console.log("this is result", result)
     if(!result) {
         throw new ApiError(404, "otp is not valid")
-    }else if(result[0].otp !== otp ) {
+    }else if(result?.otp !== otp ) {
         throw new ApiError(404, "otp is wrong")
     }
 
@@ -368,5 +371,49 @@ const changeUserEmail = asyncHandler( async(req, res) => {
 })
 
 //change avatar image 
+const changeAvatarImage = asyncHandler( async(req, res) => {
+    const avatarLocalPath = req.file?.path;
+    console.log("this is local path",avatarLocalPath)
+    if(!avatarLocalPath){
+        throw new ApiError(404,"Avatar file is missing")
+    }
 
-export {generateOtp, register,login, logout, refreshAccessToken, changeCurrentPassword, getCurrentUser, changeUserName, changeUserEmail}
+    const avatar = await uploadOnCloudinay(avatarLocalPath)
+
+    if(!avatar.url){
+        throw new ApiError(400, "Error while uploading avatar")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set:{
+                avatar:avatar.secure_url
+            }
+        },
+        {new:true}
+    )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, "avatar image is uploading successfully")
+    )
+   
+
+
+})
+
+
+export {
+    generateOtp, 
+    register,
+    login, 
+    logout, 
+    refreshAccessToken, 
+    changeCurrentPassword, 
+    getCurrentUser, 
+    changeUserName, 
+    changeUserEmail,
+    changeAvatarImage
+}
