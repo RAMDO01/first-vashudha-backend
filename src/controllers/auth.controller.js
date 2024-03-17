@@ -264,4 +264,107 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
     }
 })
 
-export {generateOtp, register,login, logout}
+//change current password
+const changeCurrentPassword = asyncHandler( async(req, res) => {
+    const { oldPassword, newPassword, confirmNewPassword} = req.body
+    if(
+        [ oldPassword, newPassword, confirmNewPassword].some((field) => field.trim() === "")
+        ){
+        throw new ApiError(404, "all fields are required")
+    }
+
+    const user = await User.findById(req.user?._id)
+
+    if(newPassword !== confirmNewPassword) {
+        throw new ApiError(400, "Password is not matched")
+    }
+
+    //match the old password
+    const isPasswordValid = await user.isPasswordCorrect(oldPassword)
+    if(isPasswordValid) {
+        throw new ApiError(404,"Password is incorrect")
+    }
+
+    user.password = newPassword
+    await user.save({validateBeforeSave:false})
+
+    return res
+    .status(200) 
+    .json(new ApiResponse(201, {}, "password change successfull"))
+
+
+})
+
+//get current user
+const getCurrentUser = asyncHandler( async(req, res) => {
+    return res
+    .status(200) 
+    .json(
+        new ApiResponse(200, req.user, "Current user fetched successfully")
+    )
+})
+
+//update account details
+const changeUserName = asyncHandler( async(req, res) => {
+    const {fullName} = req.body
+    if(!fullName) {
+        throw new ApiError(404, "fields are required")
+    }
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set:{
+                fullName:fullName
+            }
+        },
+        {new:true}
+    )
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, user, "Name is change successfull")
+    )
+})
+
+//change user email
+const changeUserEmail = asyncHandler( async(req, res) => {
+    const {email, otp} = req.body
+    if(!email) {
+        throw new ApiError(404, "email is required for updating")
+    }
+    //check if emil is already exists
+    // const existsUser = await User.findOne({email})
+    // if(existsUser) {
+    //     throw new ApiError(404, "Email is already exists")
+    // }
+
+    generateOtp()
+
+    //check otp
+    const result = await OTP.findOne({email}).split({createAt : -1}).limit(1)
+    console.log("this is result", result)
+    if(!result) {
+        throw new ApiError(404, "otp is not valid")
+    }else if(result[0].otp !== otp ) {
+        throw new ApiError(404, "otp is wrong")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set:{
+                email:email
+            }
+        },
+        {new:true}
+    )
+
+    return res
+    .status(200) 
+    .json(
+        new ApiResponse(201, user, "email is changed successfull")
+    )
+
+})
+
+export {generateOtp, register,login, logout, refreshAccessToken, changeCurrentPassword, getCurrentUser, changeUserName, changeUserEmail}
