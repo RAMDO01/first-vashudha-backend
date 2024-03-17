@@ -367,4 +367,6 @@ const changeUserEmail = asyncHandler( async(req, res) => {
 
 })
 
+//change avatar image 
+
 export {generateOtp, register,login, logout, refreshAccessToken, changeCurrentPassword, getCurrentUser, changeUserName, changeUserEmail}

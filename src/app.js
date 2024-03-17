@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import {router} from "./routes/auth.route.js"
+import {newsrouter} from "./routes/news.route.js"
 
 const app = express()
 
@@ -23,6 +24,7 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 app.use("/api/v1/vashu",router)
+app.use("/api/v1/vashu",newsrouter)
 
 
 
