@@ -8,12 +8,12 @@ cloudinary.config({
     api_secret:process.env.CLOUDINARY_API_SECRET
 })
 
-const uploadOnCloudinay = async (localPath) => {
+const uploadOnCloudinay = async (localPath, resourceType) => {
     try {
         if(!localPath) return null
         //upload the file on cloudinary
         const response = await cloudinary.uploader.upload(localPath,{
-            resource_type:"image"
+            resource_type:`${resourceType}`
         })
 
         //file has veen upload successfull
@@ -27,7 +27,7 @@ const uploadOnCloudinay = async (localPath) => {
 }
 
 
-const destroyImageFromCloudinary = async(imageUrl) => {
+const destroyFileFromCloudinary = async(imageUrl, resourceType) => {
     try {
          
         if(!imageUrl) return null
@@ -38,7 +38,7 @@ const destroyImageFromCloudinary = async(imageUrl) => {
         console.log("this is old avatar public id",publicId)
 
         await cloudinary.uploader.destroy(publicId,{
-            resource_type:"image"
+            resource_type:`${resourceType}`
         })
         console.log("old image is deleted")
         return
@@ -47,4 +47,4 @@ const destroyImageFromCloudinary = async(imageUrl) => {
     }
 }
 
-export {uploadOnCloudinay, destroyImageFromCloudinary}
+export {uploadOnCloudinay, destroyFileFromCloudinary}

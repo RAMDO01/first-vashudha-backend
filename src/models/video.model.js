@@ -11,8 +11,9 @@ const videoSchmea = new mongoose.Schema(
             required:true
         },
         owner:{
-            type:Schema.Types.ObjectId,
-            ref:"User"
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User",
+            required:true,
         },
         title:{
             type:String,
@@ -23,8 +24,9 @@ const videoSchmea = new mongoose.Schema(
             required:true
         },
         category:{
-            type:Schema.Types.ObjectId,
-            ref:"Category"
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Category",
+            required:true
         },
         duration:{
             type:Number,

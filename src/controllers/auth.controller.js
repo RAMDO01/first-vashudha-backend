@@ -3,7 +3,7 @@ import {OTP} from "../models/otp.model.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
-import {uploadOnCloudinay, destroyImageFromCloudinary} from "../utils/cloudinary.js"
+import {uploadOnCloudinay, destroyFileFromCloudinary} from "../utils/cloudinary.js"
 import otpGenerator from "otp-generator"
 import jwt from "jsonwebtoken"
 
@@ -383,13 +383,13 @@ const changeAvatarImage = asyncHandler( async(req, res) => {
     if(!oldAvatarUrl) {
         return
     }else{
-        await destroyImageFromCloudinary(oldAvatarUrl)
+        await destroyFileFromCloudinary(oldAvatarUrl, "image")
     }
     // var oldAvatarUrlPublicId = ""
     // console.log("this is old avatar url public id => ",oldAvatarUrlPublicId)
     
 
-    const avatar = await uploadOnCloudinay(avatarLocalPath)
+    const avatar = await uploadOnCloudinay(avatarLocalPath, "image")
    // console.log("this is avatar url => ", avatar)
     if(!avatar.url){
         throw new ApiError(400, "Error while uploading avatar")
