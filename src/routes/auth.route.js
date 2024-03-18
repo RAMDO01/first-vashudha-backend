@@ -28,9 +28,10 @@ router.put("/change-password",verifyJWT, changeCurrentPassword)
 //secure route
 router.route("/user-logout").post(verifyJWT, logout)
 
-router.route("/upload-avatar").post(
+router.route("/upload-avatar").patch(
+    verifyJWT,
     upload.single("avatar"),
-    verifyJWT,changeAvatarImage)
+    changeAvatarImage)
 
 
 export {router}

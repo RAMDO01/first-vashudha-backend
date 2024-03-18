@@ -1,5 +1,6 @@
 import {v2 as cloudinary} from "cloudinary"
 import fs from "fs"
+import { extractPublicId } from 'cloudinary-build-url'
 
 cloudinary.config({
     cloud_name:process.env.CLOUDINARY_CLOUD_NAME,
@@ -12,17 +13,38 @@ const uploadOnCloudinay = async (localPath) => {
         if(!localPath) return null
         //upload the file on cloudinary
         const response = await cloudinary.uploader.upload(localPath,{
-            resource_type:"auto"
+            resource_type:"image"
         })
 
         //file has veen upload successfull
-        fs.unlink(localPath)
+        fs.unlinkSync(localPath)
         return response
     } catch (error) {
-        fs.unlink(localPath)
+        fs.unlinkSync(localPath)
         console.log("error in cloudinary controller",error)
         return null
     }
 }
 
-export {uploadOnCloudinay}
+
+const destroyImageFromCloudinary = async(imageUrl) => {
+    try {
+         
+        if(!imageUrl) return null
+
+        const publicId = extractPublicId( imageUrl )
+
+        //const publicId = cloudinary.url(imageUrl)
+        console.log("this is old avatar public id",publicId)
+
+        await cloudinary.uploader.destroy(publicId,{
+            resource_type:"image"
+        })
+        console.log("old image is deleted")
+        return
+    } catch (error) {
+        console.log("error in deleting avatar form cloudinary",error)
+    }
+}
+
+export {uploadOnCloudinay, destroyImageFromCloudinary}

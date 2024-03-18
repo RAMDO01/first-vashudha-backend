@@ -3,7 +3,7 @@ import {OTP} from "../models/otp.model.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
-import {uploadOnCloudinay} from "../utils/cloudinary.js"
+import {uploadOnCloudinay, destroyImageFromCloudinary} from "../utils/cloudinary.js"
 import otpGenerator from "otp-generator"
 import jwt from "jsonwebtoken"
 
@@ -373,18 +373,29 @@ const changeUserEmail = asyncHandler( async(req, res) => {
 //change avatar image 
 const changeAvatarImage = asyncHandler( async(req, res) => {
     const avatarLocalPath = req.file?.path;
-    console.log("this is local path",avatarLocalPath)
+    //console.log("this is local path",avatarLocalPath)
     if(!avatarLocalPath){
         throw new ApiError(404,"Avatar file is missing")
     }
 
-    const avatar = await uploadOnCloudinay(avatarLocalPath)
+    const user = await User.findById(req.user._id)
+    const oldAvatarUrl = user?.avatar
+    if(!oldAvatarUrl) {
+        return
+    }else{
+        await destroyImageFromCloudinary(oldAvatarUrl)
+    }
+    // var oldAvatarUrlPublicId = ""
+    // console.log("this is old avatar url public id => ",oldAvatarUrlPublicId)
+    
 
+    const avatar = await uploadOnCloudinay(avatarLocalPath)
+   // console.log("this is avatar url => ", avatar)
     if(!avatar.url){
         throw new ApiError(400, "Error while uploading avatar")
     }
-
-    const user = await User.findByIdAndUpdate(
+    //oldAvatarUrlPublicId = avatar.public_id;
+    const updateUser = await User.findByIdAndUpdate(
         req.user._id,
         {
             $set:{
@@ -393,15 +404,11 @@ const changeAvatarImage = asyncHandler( async(req, res) => {
         },
         {new:true}
     )
-
     return res
     .status(200)
     .json(
         new ApiResponse(200, "avatar image is uploading successfully")
     )
-   
-
-
 })
 
 
